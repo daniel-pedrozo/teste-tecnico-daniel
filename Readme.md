@@ -1,33 +1,37 @@
+Aplicação Cliente-Servidor
+Contexto
 
--- Contexto:
-- estrutura cliente servidor;
-- expandivel;
-- unico canal de comunicação ;
+    Estrutura cliente-servidor
+    Expansível
+    Único canal de comunicação
 
---- Aplição Cliente Servidor ---
+Requisitos
 
- -- Requisitos:
-    Flask;
-    Requisito HTTP;
-    Interface / comunicação;
+    Flask
+    Requisito HTTP
+    Interface / comunicação
 
--- Estrutura:
-    Servidor.py
-        - Mandar (msg);
-        - Receber (msg);
-        - Comunicação HTTP;
-        - Metodo Gera numeros aleatorios pares;
-        - Metodos gera numeros aleatorios impares;
-        - Metodo para verificar indentificação do cliente
+**Estrutura**
 
+ Servidor (Servidor.py)
+ 
+     Mandar (msg)
+     Receber (msg)
+     Comunicação HTTP
+     Método gera números aleatórios pares
+     Métodos gera números aleatórios ímpares
+     Método para verificar identificação do cliente
+ 
+ Cliente (Cliente.py)
+ 
+     Escutar servidor
+     Input usuário
+     Leitura de msg
+     Ao vivo
 
-    Cliente.py
-        - Escutar servidor;
-        - Input usuario;
-        - Leitura de msg;
-        - Ao vivo;
+**Requisitos**
 
--- requisitos:
-    - cliente:
-        - Cliente vai requisitar -> "hello word" e int para o servidor;
-        - Servidor ira responder com as informações adquadas;
+Cliente
+
+    Cliente vai requisitar -> "hello word" e int para o servidor
+    Servidor irá responder com as informações adequadas
