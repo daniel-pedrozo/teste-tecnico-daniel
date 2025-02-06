@@ -1,7 +1,8 @@
 
-- estrutura cliente servidor
-- expandivel
-- unico canal de comunicação 
+-- Contexto:
+- estrutura cliente servidor;
+- expandivel;
+- unico canal de comunicação ;
 
 --- Aplição Cliente Servidor ---
 
@@ -15,10 +16,8 @@
         - Mandar (msg);
         - Receber (msg);
         - Comunicação HTTP;
-        
         - Metodo Gera numeros aleatorios pares;
         - Metodos gera numeros aleatorios impares;
-
         - Metodo para verificar indentificação do cliente
 
 
@@ -28,7 +27,7 @@
         - Leitura de msg;
         - Ao vivo;
 
--- requisitos
+-- requisitos:
     - cliente:
         - Cliente vai requisitar -> "hello word" e int para o servidor;
         - Servidor ira responder com as informações adquadas;
