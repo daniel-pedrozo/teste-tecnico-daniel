@@ -17,42 +17,61 @@ def hello_word():
     return data
 
 @app.route('/get-inteiro', methods=['GET'])
-def inteiro() -> int:    
+def int() -> int:    
     data = convert(123456789)
     return data
 
-@app.route('/get-even', methods=['GET'])
+@app.route('/get-even', methods=['POST'])
 def even():
-    num_even = random.randint(1,50) * 2
-    new_num = convert(num_even)
-    return new_num
-
-@app.route('/get-odd', methods=['GET'])
-def odd():
-    num_odd = random.randint(1,50) * 2 + 1
-    new_num = convert(num_odd)
-    return new_num
-
-
-def convert(data):
-    new_data = str(data)
-    return new_data
-
-@app.route('/pass-ident', methods=['POST'])
-def save_ident():
-    """Save the client's identification and assign a random number."""
+    """Generate an even number and store it for the client."""
     data = request.get_json()
     
     if not data or 'client_id' not in data:
         return jsonify({"error": "Client ID is required"}), 400
     
     client_id = data['client_id']
-    random_number = random.randint(1, 100)
+    num_even = random.randint(1, 50) * 2
+    client_data[client_id] = num_even  # Save the number for this client
+    
+    return jsonify({"even_number": num_even})
 
-    # Store the number for the client
-    client_data[client_id] = random_number
+@app.route('/get-odd', methods=['POST'])
+def odd():
+    """Generate an odd number and store it for the client."""
+    data = request.get_json()
+    
+    if not data or 'client_id' not in data:
+        return jsonify({"error": "Client ID is required"}), 400
+    
+    client_id = data['client_id']
+    num_odd = random.randint(1, 50) * 2 + 1
+    client_data[client_id] = num_odd  # Save the number for this client
+    
+    return jsonify({"odd_number": num_odd})
 
-    return jsonify({"message": f"Number {random_number} assigned to client {client_id}"}), 200
+
+def convert(data):
+    new_data = str(data)
+    return new_data
+
+
+@app.route('/pass-ident', methods=['POST'])
+def save_ident():
+    """Register a client ID only if it does not exist."""
+    data = request.get_json()
+    
+    if not data or 'client_id' not in data:
+        return jsonify({"error": "Client ID is required"}), 400
+    
+    client_id = data['client_id']
+
+    # Only register if the client does not exist
+    if client_id not in client_data:
+        client_data[client_id] = None  # Placeholder for future numbers
+        return jsonify({"message": f"Client {client_id} registered successfully"}), 200
+    else:
+        return jsonify({"message": f"Client {client_id} already exists, keeping previous data"}), 200
+
 
 @app.route('/get-last-number', methods=['POST'])
 def get_last_number():
@@ -63,11 +82,15 @@ def get_last_number():
         return jsonify({"error": "Client ID is required"}), 400
     
     client_id = data['client_id']
+
+    if client_data[client_id]:
     
-    if client_id in client_data:
-        return jsonify({"last_number": client_data[client_id]}), 200
+        if client_id in client_data:
+            return jsonify({"last_number": client_data[client_id]}), 200
+        else:
+            return jsonify({"error": "Client ID not found"}), 404
     else:
-        return jsonify({"error": "Client ID not found"}), 404
+        return jsonify({"error": "Client does not have a saved number"})
 
 if __name__ == "__main__":
     app.run()
