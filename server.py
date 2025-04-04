@@ -9,6 +9,7 @@ client_data = {}
 # Pydantic models for request validation
 class ClientIDModel(BaseModel):
     client_id: str  # Ensuring client_id is always a string
+    new_data: int | None = None # Ensuring data is always a integer or none
 
 @app.route('/connection', methods=['GET'])
 def conection():
@@ -22,43 +23,70 @@ def get_word():
 @app.route('/get-integer', methods=['GET'])
 def get_int():
     """Return an integer as a string."""
-    data = convert(123456789)
-    return jsonify({"integer": data}), 200
+    new_data = convert(123456789)
+
+    # Validate the data type before returning
+    if not isinstance(new_data, int):
+        return jsonify({"error": "Invalid data type"}), 500  # Internal server error
+
+    return jsonify({"integer": new_data}), 200
 
 @app.route('/get-even', methods=['POST'])
 def get_even():
     """Generate an even number and store it for the client."""
+    json_data = request.get_json()
+    if not json_data:
+        return jsonify({"error": "Invalid JSON"}), 400
+
     try:
         data = ClientIDModel(**request.get_json())  # Validate JSON
         client_id = data.client_id
     except ValidationError as e:
         return jsonify({"error": str(e)}), 400
 
-    num_even = random.randint(1, 50) * 2
-    client_data[client_id] = num_even  
-    return jsonify({"even_number": num_even}), 200
+    new_data = random.randint(1, 50) * 2
+    client_data[client_id] = new_data  
+
+    # Validate the data type before returning
+    if not isinstance(new_data, int):
+        return jsonify({"error": "Invalid data type"}), 500  # Internal server error
+
+    return jsonify({"even_number": new_data}), 200
 
 @app.route('/get-odd', methods=['POST'])
 def get_odd():
     """Generate an odd number and store it for the client."""
+    json_data = request.get_json()
+    if not json_data:
+        return jsonify({"error": "Invalid JSON"}), 400
+
     try:
         data = ClientIDModel(**request.get_json())  
         client_id = data.client_id
     except ValidationError as e:
         return jsonify({"error": str(e)}), 400
 
-    num_odd = random.randint(1, 50) * 2 + 1
-    client_data[client_id] = num_odd  
-    return jsonify({"odd_number": num_odd}), 200
+    new_data = random.randint(1, 50) * 2 + 1
+    client_data[client_id] = new_data  
+
+    # Validate the data type before returning
+    if not isinstance(new_data, int):
+        return jsonify({"error": "Invalid data type"}), 500  # Internal server error
+
+    return jsonify({"odd_number": new_data}), 200
 
 def convert(data):
-    new_data = str(data)
-    return new_data
+    convert_data = str(data)
+    return convert_data
 
 
 @app.route('/pass-ident', methods=['POST'])
 def save_ident():
     """Register a client ID only if it does not exist."""
+    json_data = request.get_json()
+    if not json_data:
+        return jsonify({"error": "Invalid JSON"}), 400
+
     try:
         data = ClientIDModel(**request.get_json())  
         client_id = data.client_id
