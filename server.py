@@ -1,54 +1,55 @@
 from flask import Flask, request, jsonify
+from pydantic import BaseModel, ValidationError
 import random
 
 
 app = Flask(__name__)
-
 client_data = {}
+
+# Pydantic models for request validation
+class ClientIDModel(BaseModel):
+    client_id: str  # Ensuring client_id is always a string
 
 @app.route('/connection', methods=['GET'])
 def conection():
-    """Escutar a requisição do cliente"""
-    return "Conectado ao servidor"
+    """Listen for client requests."""
+    return jsonify({"message": "Connected to the server"}), 200
     
 @app.route('/get-word', methods=['GET'])
-def hello_word():
-    data = "Hello Word"
-    return data
+def get_word():
+    return jsonify({"message": "Hello World"}), 200
 
-@app.route('/get-inteiro', methods=['GET'])
-def int() -> int:    
+@app.route('/get-integer', methods=['GET'])
+def get_int():
+    """Return an integer as a string."""
     data = convert(123456789)
-    return data
+    return jsonify({"integer": data}), 200
 
 @app.route('/get-even', methods=['POST'])
-def even():
+def get_even():
     """Generate an even number and store it for the client."""
-    data = request.get_json()
-    
-    if not data or 'client_id' not in data:
-        return jsonify({"error": "Client ID is required"}), 400
-    
-    client_id = data['client_id']
+    try:
+        data = ClientIDModel(**request.get_json())  # Validate JSON
+        client_id = data.client_id
+    except ValidationError as e:
+        return jsonify({"error": str(e)}), 400
+
     num_even = random.randint(1, 50) * 2
-    client_data[client_id] = num_even  # Save the number for this client
-    
-    return jsonify({"even_number": num_even})
+    client_data[client_id] = num_even  
+    return jsonify({"even_number": num_even}), 200
 
 @app.route('/get-odd', methods=['POST'])
-def odd():
+def get_odd():
     """Generate an odd number and store it for the client."""
-    data = request.get_json()
-    
-    if not data or 'client_id' not in data:
-        return jsonify({"error": "Client ID is required"}), 400
-    
-    client_id = data['client_id']
-    num_odd = random.randint(1, 50) * 2 + 1
-    client_data[client_id] = num_odd  # Save the number for this client
-    
-    return jsonify({"odd_number": num_odd})
+    try:
+        data = ClientIDModel(**request.get_json())  
+        client_id = data.client_id
+    except ValidationError as e:
+        return jsonify({"error": str(e)}), 400
 
+    num_odd = random.randint(1, 50) * 2 + 1
+    client_data[client_id] = num_odd  
+    return jsonify({"odd_number": num_odd}), 200
 
 def convert(data):
     new_data = str(data)
@@ -58,39 +59,37 @@ def convert(data):
 @app.route('/pass-ident', methods=['POST'])
 def save_ident():
     """Register a client ID only if it does not exist."""
-    data = request.get_json()
-    
-    if not data or 'client_id' not in data:
-        return jsonify({"error": "Client ID is required"}), 400
-    
-    client_id = data['client_id']
+    try:
+        data = ClientIDModel(**request.get_json())  
+        client_id = data.client_id
+    except ValidationError as e:
+        return jsonify({"error": str(e)}), 400
 
-    # Only register if the client does not exist
     if client_id not in client_data:
-        client_data[client_id] = None  # Placeholder for future numbers
+        client_data[client_id] = None  
         return jsonify({"message": f"Client {client_id} registered successfully"}), 200
     else:
-        return jsonify({"message": f"Client {client_id} already exists, keeping previous data"}), 200
+        return jsonify({"message": f"Client {client_id} already exists"}), 200
 
 
 @app.route('/get-last-number', methods=['POST'])
 def get_last_number():
     """Retrieve the last assigned number for a given client."""
-    data = request.get_json()
-    
-    if not data or 'client_id' not in data:
-        return jsonify({"error": "Client ID is required"}), 400
-    
-    client_id = data['client_id']
+    try:
+        data = ClientIDModel(**request.get_json())  
+        client_id = data.client_id
+    except ValidationError as e:
+        return jsonify({"error": str(e)}), 400
 
-    if client_data[client_id]:
+    if client_id not in client_data:
+        return jsonify({"error": "Client ID not found"}), 404
     
-        if client_id in client_data:
-            return jsonify({"last_number": client_data[client_id]}), 200
-        else:
-            return jsonify({"error": "Client ID not found"}), 404
+    last_number = client_data[client_id]
+    if last_number is not None:
+        return jsonify({"last_number": last_number}), 200
     else:
-        return jsonify({"error": "Client does not have a saved number"})
+        return jsonify({"error": "Client does not have a saved number"}), 404
+
 
 if __name__ == "__main__":
     app.run()
