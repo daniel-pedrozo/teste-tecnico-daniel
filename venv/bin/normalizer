@@ -1,4 +1,4 @@
-#!/home/computaria/Documents/teste-tecnico/venv/bin/python3
+#!/home/daniel-pedrozo/Documents/teste-tecnico-daniel/venv/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys
