@@ -1,0 +1,24 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+
+# VS Code / Editor folders
+.vscode/
+
+# Cache directories
+.mypy_cache/
+.ruff_cache/
+
+# Shell script outputs or logs (optional)
+*.log
+
+# Ignore environment-specific files
+.env
+*.env
+
+# Pytest / testing cache
+.pytest_cache/

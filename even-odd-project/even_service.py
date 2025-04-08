@@ -1,19 +1,25 @@
 import asyncio
 import json
+import logging
 import random
 
 import redis
+import structlog
 from nats.aio.client import Client as NATS
 from pydantic import BaseModel, ValidationError
+
+# Logging setup
+structlog.configure(
+    wrapper_class=structlog.make_filtering_bound_logger(logging.INFO),
+)
+log = structlog.get_logger()
+
+# Redis client
+r = redis.Redis(host="localhost", port=6379, db=0, decode_responses=True)
 
 
 class ClientIDModel(BaseModel):
     client_id: str
-
-
-client_data = {}
-
-r = redis.Redis(host="localhost", port=6379, db=0, decode_responses=True)
 
 
 async def message_handler(msg):
@@ -22,24 +28,36 @@ async def message_handler(msg):
         data_dict = json.loads(data)
         client = ClientIDModel(**data_dict)
     except (ValidationError, json.JSONDecodeError) as e:
+        log.error("Invalid request data", error=str(e), raw_data=data)
         await msg.respond(json.dumps({"error": str(e)}).encode())
         return
 
-    client_key = f"client:{client.client_id}:numbers"
+    client_key = f"client:{client.client_id}"
 
+    if not r.exists(client_key):
+        log.warning(
+            "Unregistered client tried to access even service",
+            client_id=client.client_id,
+        )
+        await msg.respond(json.dumps({"error": "Client not registered"}).encode())
+        return
+
+    number_key = f"{client_key}:numbers"
     even_number = random.randint(1, 50) * 2
-    r.lpush(client_key, even_number)
+    r.lpush(number_key, even_number)
 
-    response = {"even_number": even_number}
+    log.info(
+        "Even number generated", client_id=client.client_id, even_number=even_number
+    )
 
-    await msg.respond(json.dumps(response).encode())
+    await msg.respond(json.dumps({"even_number": even_number}).encode())
 
 
 async def main():
     nc = NATS()
     await nc.connect("localhost:4222")
     await nc.subscribe("get_even_service", cb=message_handler)
-    print("Service is listening for requests on 'get_even_service'")
+    log.info("Even service listening on 'get_even_service'")
     while True:
         await asyncio.sleep(1)
 
