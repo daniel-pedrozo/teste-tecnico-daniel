@@ -1,50 +1,17 @@
 import asyncio
 import json
-import logging
-import sys
 
 import redis
-import structlog
+from client_model import ClientIDModel
 from flask import Flask, jsonify, request
 from nats.aio.client import Client as NATS
-from pydantic import BaseModel, ValidationError
+from pydantic import ValidationError
+from structlog_config import config
 
-# --------------------
-# Structlog Setup
-# --------------------
-logging.basicConfig(
-    format="%(message)s",
-    stream=sys.stdout,
-    level=logging.INFO,
-)
+log = config()
 
-structlog.configure(
-    processors=[
-        structlog.processors.TimeStamper(fmt="iso"),
-        structlog.processors.add_log_level,
-        structlog.processors.StackInfoRenderer(),
-        structlog.processors.format_exc_info,
-        structlog.processors.JSONRenderer(),
-    ],
-    context_class=dict,
-    logger_factory=structlog.stdlib.LoggerFactory(),
-    wrapper_class=structlog.make_filtering_bound_logger(logging.INFO),
-    cache_logger_on_first_use=True,
-)
-
-log = structlog.get_logger()
-
-# --------------------
-# Flask App Setup
-# --------------------
 app = Flask(__name__)
 r = redis.Redis(host="localhost", port=6379, db=0, decode_responses=True)
-
-
-# Pydantic model
-class ClientIDModel(BaseModel):
-    client_id: str
-    new_data: int | None = None
 
 
 @app.route("/connection", methods=["GET"])

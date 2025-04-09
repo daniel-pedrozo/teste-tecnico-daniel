@@ -1,25 +1,16 @@
 import asyncio
 import json
-import logging
 import random
 
 import redis
-import structlog
+from client_model import ClientIDModel
 from nats.aio.client import Client as NATS
-from pydantic import BaseModel, ValidationError
+from pydantic import ValidationError
+from structlog_config import config
 
-# Logging setup
-structlog.configure(
-    wrapper_class=structlog.make_filtering_bound_logger(logging.INFO),
-)
-log = structlog.get_logger()
+log = config()
 
-# Redis client
 r = redis.Redis(host="localhost", port=6379, db=0, decode_responses=True)
-
-
-class ClientIDModel(BaseModel):
-    client_id: str
 
 
 async def message_handler(msg):
@@ -36,28 +27,26 @@ async def message_handler(msg):
 
     if not r.exists(client_key):
         log.warning(
-            "Unregistered client tried to access even service",
+            "Unregistered client tried to access odd service",
             client_id=client.client_id,
         )
         await msg.respond(json.dumps({"error": "Client not registered"}).encode())
         return
 
     number_key = f"{client_key}:numbers"
-    even_number = random.randint(1, 50) * 2
-    r.lpush(number_key, even_number)
+    odd_number = random.randint(1, 50) * 2 + 1
+    r.lpush(number_key, odd_number)
 
-    log.info(
-        "Even number generated", client_id=client.client_id, even_number=even_number
-    )
+    log.info("Odd number generated", client_id=client.client_id, odd_number=odd_number)
 
-    await msg.respond(json.dumps({"even_number": even_number}).encode())
+    await msg.respond(json.dumps({"odd_number": odd_number}).encode())
 
 
 async def main():
     nc = NATS()
     await nc.connect("localhost:4222")
-    await nc.subscribe("get_even_service", cb=message_handler)
-    log.info("Even service listening on 'get_even_service'")
+    await nc.subscribe("get_odd_service", cb=message_handler)
+    log.info("Odd service listening on 'get_odd_service'")
     while True:
         await asyncio.sleep(1)
 

@@ -2,11 +2,11 @@ import argparse
 
 import requests
 
-BASE_URL = "http://127.0.0.1:5000"
+BASE_URL = "http://127.0.0.1:8000"
 
 
-def check_connection():
-    response = requests.get(f"{BASE_URL}/connection")
+def check_conection():
+    response = requests.get(f"{BASE_URL}/conection")
     if response.status_code == 200:
         print(response.json())
     else:
@@ -84,7 +84,7 @@ def main():
 
     args = parser.parse_args()
 
-    check_connection()
+    check_conection()
 
     client_id = args.client_id
 
