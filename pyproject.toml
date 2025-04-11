@@ -1,0 +1,44 @@
+[project]
+name = "even-odd-project"
+version = "0.1.0"
+description = "This is a basic project with the objective to learn about backend and microservices. The project is a FastAPI server that has basic endpoints. The principal endpoints are get-even and get-odd, which communicate with microservices. The project includes a client terminal tool to simulate a client using the API."
+authors = [
+    {name = "daniel-pedrozo", email = "daniel.pedrozo8266@gmail.com"}
+]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.12"
+
+dependencies = [
+    "fastapi==0.115.12",
+    "uvicorn[standard]==0.34.0",
+    "redis==5.2.1",
+    "nats-py==2.10.0",
+    "structlog==25.2.0",
+    "pydantic==2.11.2"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "black",
+    "mypy"
+]
+
+[tool.black]
+line-length = 88
+target-version = ["py312"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q"
+testpaths = ["/eve-odd-project/test_server.py"]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

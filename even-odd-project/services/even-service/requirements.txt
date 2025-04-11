@@ -1,4 +1,4 @@
-redis
-nats-py
-pydantic
-structlog
+redis==5.2.1
+nats-py==2.10.0
+pydantic==2.11.2
+structlog==25.2.0

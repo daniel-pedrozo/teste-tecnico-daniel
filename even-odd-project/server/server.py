@@ -5,6 +5,7 @@ from typing import Dict
 import redis
 from fastapi import FastAPI, HTTPException, Query
 from nats.aio.client import Client as NATS
+from pydantic_core import from_json
 
 from server.logging_config import setup_logging
 from server.models import (ClientIDModel, ClientRequest, EvenNumberResponse,
@@ -27,7 +28,7 @@ async def publish_nats_message(subject: str, client_id: str) -> Dict:
         await nc.connect(nats_address)
         payload = ClientIDModel(client_id=client_id).json().encode()
         reply = await nc.request(subject, payload, timeout=1)
-        return json.loads(reply.data.decode())
+        return from_json(reply.data.decode())
     except asyncio.TimeoutError:
         raise HTTPException(
             status_code=504, detail=f"Timeout waiting for {subject} response"
