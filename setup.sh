@@ -11,7 +11,7 @@ source venv/bin/activate
 echo "Removing the old docker images.."
 
 docker rm redis
-docker rm nats
+docker rm nats-server
 
 echo "Running a local Redis server.."
 docker run --name redis -p 6379:6379 -d redis

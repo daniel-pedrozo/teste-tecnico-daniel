@@ -10,7 +10,7 @@ from structlog_config import config
 
 log = config()
 
-r = redis.Redis(host="localhost", port=6379, db=0, decode_responses=True)
+r = redis.Redis(host="redis", port=6379, db=0, decode_responses=True)
 
 
 async def message_handler(msg):
@@ -46,7 +46,7 @@ async def message_handler(msg):
 
 async def main():
     nc = NATS()
-    await nc.connect("localhost:4222")
+    await nc.connect("nats://nats-server:4222")
     await nc.subscribe("get_even_service", cb=message_handler)
     log.info("Even service listening on 'get_even_service'")
     while True:

@@ -5,66 +5,61 @@ import requests
 BASE_URL = "http://127.0.0.1:8000"
 
 
-def check_conection():
-    response = requests.get(f"{BASE_URL}/conection")
+def handle_request(method, endpoint, client_id=None, json=None, label=None):
+    url = f"{BASE_URL}/{endpoint}"
+    params = {"client_id": client_id} if client_id else None
+
+    try:
+        if method == "GET":
+            response = requests.get(url, params=params)
+        elif method == "POST":
+            response = requests.post(url, json=json)
+        else:
+            raise ValueError(f"Unsupported method: {method}")
+    except requests.RequestException as e:
+        print(f"Request error: {e}")
+        return
+
     if response.status_code == 200:
-        print(response.json())
+        print(f"{label}:", response.json())
     else:
-        print(f"Connection failed: {response.status_code} - {response.text}")
+        print(f"{label} failed: {response.status_code} - {response.text}")
+
+
+def check_connection():
+    handle_request("GET", "conection", label="Connection check")
 
 
 def request_even(client_id):
-    response = requests.post(f"{BASE_URL}/get-even", json={"client_id": client_id})
-    if response.status_code == 200:
-        print("Even number response:", response.json())
-    else:
-        print(
-            f"Even number request failed in: {response.status_code} - {response.text}"
-        )
+    handle_request("GET", "get_even", client_id=client_id, label="Even number response")
 
 
 def request_odd(client_id):
-    response = requests.post(f"{BASE_URL}/get-odd", json={"client_id": client_id})
-    if response.status_code == 200:
-        print("Odd number response:", response.json())
-    else:
-        print(f"Odd number request failed: {response.status_code} - {response.text}")
+    handle_request("GET", "get_odd", client_id=client_id, label="Odd number response")
 
 
 def pass_ident(client_id):
-    response = requests.post(f"{BASE_URL}/pass-ident", json={"client_id": client_id})
-    if response.status_code == 200:
-        print("Client ID registration:", response.json())
-    else:
-        print(f"Identification failed: {response.status_code} - {response.text}")
+    handle_request(
+        "POST",
+        "register-client",
+        json={"client_id": client_id},
+        label="Client ID registration",
+    )
 
 
 def get_last_number(client_id):
-    response = requests.post(
-        f"{BASE_URL}/get-last-number", json={"client_id": client_id}
-    )
-    if response.status_code == 200:
-        print("Last number:", response.json())
-    else:
-        print(f"Failed to get last number: {response.status_code} - {response.text}")
+    handle_request("GET", "last-number", client_id=client_id, label="Last number")
 
 
 def get_history(client_id):
-    response = requests.post(f"{BASE_URL}/get-history", json={"client_id": client_id})
-    if response.status_code == 200:
-        print("Number history:", response.json())
-    else:
-        print(f"Failed to get history: {response.status_code} - {response.text}")
+    handle_request("GET", "get-history", client_id=client_id, label="Number history")
 
 
 def main():
     parser = argparse.ArgumentParser(
         description="Client to interact with the server and services."
     )
-
-    parser.add_argument(
-        "client_id", help="Client ID to use in all requests"
-    )  # Required positional arg
+    parser.add_argument("client_id", help="Client ID to use in all requests")
 
     parser.add_argument(
         "-r", "--register", action="store_true", help="Register the client ID"
@@ -84,7 +79,7 @@ def main():
 
     args = parser.parse_args()
 
-    check_conection()
+    check_connection()
 
     client_id = args.client_id
 

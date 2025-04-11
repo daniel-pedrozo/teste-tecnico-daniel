@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    container_name: redis
+    ports:
+      - "6379:6379"
+
+  nats-server:
+    image: nats:latest
+    healthcheck:
+      test: ["CMD", "nats-server", "--help"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    container_name: nats-server
+    ports:
+      - "4222:4222"
+
+  validator:
+    build:
+      context: .
+      dockerfile: validator/Dockerfile
+    working_dir: /app
+
+  server:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+      - nats-server
+
+  even:
+    build:
+      context: .
+      dockerfile: services/even-service/Dockerfile
+    depends_on:
+      - redis
+      - nats-server
+    restart: on-failure
+
+  odd:
+    build:
+      context: .
+      dockerfile: services/odd-service/Dockerfile
+    depends_on:
+      - redis
+      - nats-server
+    restart: on-failure
