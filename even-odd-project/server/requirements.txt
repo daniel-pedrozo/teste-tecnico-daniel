@@ -1,5 +1,5 @@
 fastapi==0.115.12
 uvicorn[standard]==0.34.0
-redis==5.2.1
+redis[async]==5.2.1
 nats-py==2.10.0
 structlog==25.2.0

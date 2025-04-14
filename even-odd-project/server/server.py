@@ -2,7 +2,7 @@ import asyncio
 import json
 from typing import Dict
 
-import redis
+import redis.asyncio as redis
 from fastapi import FastAPI, HTTPException, Query
 from nats.aio.client import Client as NATS
 from pydantic_core import from_json
@@ -26,7 +26,7 @@ async def publish_nats_message(subject: str, client_id: str) -> Dict:
     nc = NATS()
     try:
         await nc.connect(nats_address)
-        payload = ClientIDModel(client_id=client_id).json().encode()
+        payload = ClientIDModel(client_id=client_id).model_dump_json().encode()
         reply = await nc.request(subject, payload, timeout=1)
         return from_json(reply.data.decode())
     except asyncio.TimeoutError:
@@ -107,10 +107,10 @@ async def get_odd_number(client_id: str = Query(...)):
 async def get_last_number(client_id: str = Query(...)):
     key = f"client:{client_id}:numbers"
     try:
-        if not r.exists(key):
+        if not await r.exists(key):
             raise HTTPException(status_code=404, detail="Client not found")
 
-        last_number = r.lindex(key, 0)
+        last_number = await r.lindex(key, 0)
 
         if last_number is None:
             raise HTTPException(
@@ -127,10 +127,10 @@ async def get_last_number(client_id: str = Query(...)):
 async def get_history(client_id: str = Query(...)):
     key = f"client:{client_id}:numbers"
     try:
-        if not r.exists(key):
+        if not await r.exists(key):
             raise HTTPException(status_code=404, detail="Client not found")
 
-        number_history = r.lrange(key, 0, -1)
+        number_history = await r.lrange(key, 0, -1)
 
         if number_history is None:
             raise HTTPException(
@@ -147,13 +147,13 @@ async def get_history(client_id: str = Query(...)):
 async def register_client(client_request: ClientRequest):
     key = f"client:{client_request.client_id}"
     try:
-        if r.exists(key):
+        if await r.exists(key):
             log.bind(client_id=client_request.client_id).info(
                 "client_already_registered"
             )
             raise HTTPException(status_code=400, detail="Client already registered")
         else:
-            r.set(key, "registered")
+            await r.set(key, "registered")
             log.bind(client_id=client_request.client_id).info("client_registered")
             return {"client_id": client_request.client_id}
 
