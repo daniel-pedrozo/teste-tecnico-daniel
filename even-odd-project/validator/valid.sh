@@ -17,13 +17,10 @@ ruff format .
 
 echo "Ruff checks completed."
 
-echo ""
-echo "...................................."
-echo ""
 
 echo "Starting isort on: $TARGETS"
 
-isort .
+isort $TARGETS
 
 echo "Checking if its all sorted..."
 
@@ -40,9 +37,6 @@ else
   fi
 fi
 
-echo ""
-echo "...................................."
-echo ""
 
 echo "Starting MyPy type checking on $TARGETS"
 if mypy "$TARGETS"; then
