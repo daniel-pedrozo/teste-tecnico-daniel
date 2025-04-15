@@ -39,20 +39,24 @@ services:
       - redis
       - nats-server
 
-  even:
-    build:
-      context: .
-      dockerfile: services/even-service/Dockerfile
-    depends_on:
-      - redis
-      - nats-server
-    restart: on-failure
-
   odd:
     build:
       context: .
-      dockerfile: services/odd-service/Dockerfile
+      dockerfile: services/odd_service/Dockerfile
     depends_on:
       - redis
       - nats-server
     restart: on-failure
+    environment:
+      - PYTHONPATH=/app
+
+  even:
+    build:
+      context: .
+      dockerfile: services/even_service/Dockerfile
+    depends_on:
+      - redis
+      - nats-server
+    restart: on-failure
+    environment:
+      - PYTHONPATH=/app

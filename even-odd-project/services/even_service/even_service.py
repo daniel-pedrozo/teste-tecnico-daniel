@@ -3,10 +3,11 @@ import json
 import random
 
 import redis.asyncio as redis
-from client_model import ClientIDModel, OddNumberResponse, ErrorResponse
+
 from nats.aio.client import Client as NATS
 from pydantic import ValidationError
 from structlog_config import config
+from client_model import ClientIDModel, EvenNumberResponse, ErrorResponse
 
 log = config()
 
@@ -21,14 +22,14 @@ async def message_handler(msg):
     except (ValidationError, json.JSONDecodeError) as e:
         log.error("Invalid request data", error=str(e), raw_data=data)
         error_response = ErrorResponse(error=str(e))
-        await msg.respond(error_response.model_dump_json().encode()) 
+        await msg.respond(error_response.model_dump_json().encode())  
         return
 
     client_key = f"client:{client.client_id}"
 
-    if not await r.exists(client_key):  
+    if not await r.exists(client_key):
         log.warning(
-            "Unregistered client tried to access odd service",
+            "Unregistered client tried to access even service",
             client_id=client.client_id,
         )
         error_response = ErrorResponse(error="Client not registered")
@@ -36,22 +37,22 @@ async def message_handler(msg):
         return
 
     number_key = f"{client_key}:numbers"
-    odd_number = random.choice(range(1, 101, 2))
-    await r.lpush(number_key, odd_number)
+    even_number = random.choice(range(0, 101, 2))
+    await r.lpush(number_key, even_number)
 
     log.info(
-        "Odd number generated", client_id=client.client_id, odd_number=odd_number
+        "Even number generated", client_id=client.client_id, even_number=even_number
     )
 
-    odd_number_response = OddNumberResponse(odd_number=odd_number)
-    await msg.respond(odd_number_response.model_dump_json().encode())
+    even_number_response = EvenNumberResponse(even_number=even_number)
+    await msg.respond(even_number_response.model_dump_json().encode())
 
 
 async def main():
     nc = NATS()
     await nc.connect("nats://nats-server:4222")
-    await nc.subscribe("get_odd_service", cb=message_handler)
-    log.info("Odd service listening on 'get_odd_service'")
+    await nc.subscribe("get_even_service", cb=message_handler)
+    log.info("Even service listening on 'get_even_service'")
     while True:
         await asyncio.sleep(1)
 
