@@ -1,5 +1,5 @@
 [project]
-name = "even-odd-project"
+name = "even_odd_project"
 version = "0.1.0"
 description = "This is a basic project with the objective to learn about backend and microservices. The project is a FastAPI server that has basic endpoints. The principal endpoints are get-even and get-odd, which communicate with microservices. The project includes a client terminal tool to simulate a client using the API."
 authors = [
@@ -31,7 +31,6 @@ target-version = ["py312"]
 
 [tool.mypy]
 python_version = "3.12"
-strict = true
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

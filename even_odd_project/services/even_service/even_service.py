@@ -3,12 +3,11 @@ import json
 import random
 
 import redis.asyncio as redis
-
 from nats.aio.client import Client as NATS
 from pydantic import ValidationError
-from .structlog_config import config
-from .client_model import ClientIDModel, EvenNumberResponse, ErrorResponse
 
+from .client_model import ClientIDModel, ErrorResponse, EvenNumberResponse
+from .structlog_config import config
 
 log = config()
 
@@ -23,7 +22,7 @@ async def message_handler(msg):
     except (ValidationError, json.JSONDecodeError) as e:
         log.error("Invalid request data", error=str(e), raw_data=data)
         error_response = ErrorResponse(error=str(e))
-        await msg.respond(error_response.model_dump_json().encode())  
+        await msg.respond(error_response.model_dump_json().encode())
         return
 
     client_key = f"client:{client.client_id}"

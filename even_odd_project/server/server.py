@@ -1,6 +1,7 @@
 import asyncio
 import json
 from typing import Dict
+from typing import cast, Awaitable, Any
 
 import redis.asyncio as redis
 from fastapi import FastAPI, HTTPException, Query
@@ -110,7 +111,7 @@ async def get_last_number(client_id: str = Query(...)):
         if not await r.exists(key):
             raise HTTPException(status_code=404, detail="Client not found")
 
-        last_number = await r.lindex(key, 0)
+        last_number = await cast("Awaitable[str | None]", r.lindex(key, 0))
 
         if last_number is None:
             raise HTTPException(
@@ -130,7 +131,7 @@ async def get_history(client_id: str = Query(...)):
         if not await r.exists(key):
             raise HTTPException(status_code=404, detail="Client not found")
 
-        number_history = await r.lrange(key, 0, -1)
+        number_history = await cast("Awaitable[list[Any]]", r.lrange(key, 0, -1))
 
         if number_history is None:
             raise HTTPException(

@@ -33,7 +33,7 @@ else
     echo "isort ran again and the check now passes."
   else
     echo "ERROR: isort check still failed after running the formatter again. Please investigate."
-    exit 1 # Exit with an error code
+    exit 1 
   fi
 fi
 

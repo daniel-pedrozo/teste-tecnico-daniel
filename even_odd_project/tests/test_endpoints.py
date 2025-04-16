@@ -1,5 +1,7 @@
-from fastapi.testclient import TestClient
 from unittest.mock import AsyncMock, patch
+
+from fastapi.testclient import TestClient
+
 from server.server import app
 
 client = TestClient(app)

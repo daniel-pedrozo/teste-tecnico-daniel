@@ -3,12 +3,11 @@ import json
 import random
 
 import redis.asyncio as redis
-
 from nats.aio.client import Client as NATS
 from pydantic import ValidationError
-from .structlog_config import config
-from .client_model import ClientIDModel, OddNumberResponse, ErrorResponse
 
+from .client_model import ClientIDModel, ErrorResponse, OddNumberResponse
+from .structlog_config import config
 
 log = config()
 
@@ -23,12 +22,12 @@ async def message_handler(msg):
     except (ValidationError, json.JSONDecodeError) as e:
         log.error("Invalid request data", error=str(e), raw_data=data)
         error_response = ErrorResponse(error=str(e))
-        await msg.respond(error_response.model_dump_json().encode()) 
+        await msg.respond(error_response.model_dump_json().encode())
         return
 
     client_key = f"client:{client.client_id}"
 
-    if not await r.exists(client_key):  
+    if not await r.exists(client_key):
         log.warning(
             "Unregistered client tried to access odd service",
             client_id=client.client_id,
@@ -41,9 +40,7 @@ async def message_handler(msg):
     odd_number = random.choice(range(1, 101, 2))
     await r.lpush(number_key, odd_number)
 
-    log.info(
-        "Odd number generated", client_id=client.client_id, odd_number=odd_number
-    )
+    log.info("Odd number generated", client_id=client.client_id, odd_number=odd_number)
 
     odd_number_response = OddNumberResponse(odd_number=odd_number)
     await msg.respond(odd_number_response.model_dump_json().encode())
