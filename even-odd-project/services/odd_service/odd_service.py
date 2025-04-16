@@ -6,8 +6,8 @@ import redis.asyncio as redis
 
 from nats.aio.client import Client as NATS
 from pydantic import ValidationError
-from structlog_config import config
-from client_model import ClientIDModel, OddNumberResponse, ErrorResponse
+from .structlog_config import config
+from .client_model import ClientIDModel, OddNumberResponse, ErrorResponse
 
 log = config()
 

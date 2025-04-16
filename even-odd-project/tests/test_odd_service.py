@@ -1,7 +1,7 @@
 import json
 import pytest
 from unittest.mock import AsyncMock
-from services.even_service.even_service import message_handler
+from services.odd_service.odd_service import message_handler
 
 
 @pytest.mark.asyncio
@@ -11,8 +11,8 @@ async def test_valid_client(monkeypatch):
     mock_exists = AsyncMock(return_value=True)
     mock_lpush = AsyncMock()
 
-    monkeypatch.setattr("services.even_service.even_service.r.exists", mock_exists)
-    monkeypatch.setattr("services.even_service.even_service.r.lpush", mock_lpush)
+    monkeypatch.setattr("services.odd_service.odd_service.r.exists", mock_exists)
+    monkeypatch.setattr("services.odd_service.odd_service.r.lpush", mock_lpush)
 
     msg = AsyncMock()
     msg.data = json.dumps({"client_id": client_id}).encode("utf-8")
@@ -28,7 +28,6 @@ async def test_invalid_json():
     msg = AsyncMock()
     msg.data = b"invalid-json"
 
-    # Should not raise, just log
     await message_handler(msg)
 
 
@@ -46,7 +45,7 @@ async def test_unregistered_client(monkeypatch):
     client_id = "unregistered"
 
     mock_exists = AsyncMock(return_value=False)
-    monkeypatch.setattr("services.even_service.even_service.r.exists", mock_exists)
+    monkeypatch.setattr("services.odd_service.odd_service.r.exists", mock_exists)
 
     msg = AsyncMock()
     msg.data = json.dumps({"client_id": client_id}).encode("utf-8")
