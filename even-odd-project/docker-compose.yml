@@ -28,6 +28,8 @@ services:
       context: .
       dockerfile: validator/Dockerfile
     working_dir: /app
+    environment:
+      - PYTHONPATH=/app
 
   server:
     build:
@@ -38,6 +40,8 @@ services:
     depends_on:
       - redis
       - nats-server
+    environment:
+      - PYTHONPATH=/app
 
   odd:
     build:

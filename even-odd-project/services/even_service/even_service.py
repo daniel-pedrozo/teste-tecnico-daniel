@@ -9,6 +9,7 @@ from pydantic import ValidationError
 from .structlog_config import config
 from .client_model import ClientIDModel, EvenNumberResponse, ErrorResponse
 
+
 log = config()
 
 r = redis.Redis(host="redis", port=6379, db=0, decode_responses=True)
